@@ -90,7 +90,9 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 ivMedia.setVisibility(View.VISIBLE);
                 Glide.with(context)
                         .load(tweet.mediaUrl)
-                        .transform(new RoundedCorners(40))
+                        .fitCenter()
+                        .override(640, 360)
+                        .transform(new RoundedCorners(25))
                         .into(ivMedia);
             } else {
                 ivMedia.setVisibility(View.GONE);
