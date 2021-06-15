@@ -1,6 +1,7 @@
 package com.codepath.apps.restclienttemplate;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -12,10 +13,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -35,6 +38,9 @@ public class TimelineActivity extends AppCompatActivity {
     RecyclerView rvTweets;
     List<Tweet> tweets;
     TweetsAdapter adapter;
+    FloatingActionButton compose;
+    // Instance of the progress action-view
+    MenuItem miActionProgressItem;
 
     private SwipeRefreshLayout swipeContainer;
 
@@ -43,7 +49,15 @@ public class TimelineActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_timeline);
 
+        ActionBar actionBar = getSupportActionBar();
+        actionBar.setDisplayShowHomeEnabled(true);
+        actionBar.setIcon(R.drawable.ic_twitter);
+        actionBar.setDisplayUseLogoEnabled(true);
+        actionBar.setTitle("");
+
         client = TwitterApp.getRestClient(this);
+        compose = findViewById(R.id.compose);
+        miActionProgressItem = findViewById(R.id.miActionProgress);
 
         // Find the recycler view
         rvTweets = findViewById(R.id.rvTweets);
@@ -73,6 +87,23 @@ public class TimelineActivity extends AppCompatActivity {
                 android.R.color.holo_red_light);
 
         populateHomeTimeline();
+
+        compose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(TimelineActivity.this, ComposeActivity.class);
+                startActivityForResult(i, REQUEST_CODE);
+            }
+        });
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // Store instance of the menu item containing progress
+        miActionProgressItem = menu.findItem(R.id.miActionProgress);
+
+        // Return to finish
+        return true;
     }
 
     @Override
@@ -80,17 +111,6 @@ public class TimelineActivity extends AppCompatActivity {
         // Inflate the menu
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.compose) {
-            // Navigate to the compose activity
-            Intent i = new Intent(this, ComposeActivity.class);
-            startActivityForResult(i, REQUEST_CODE);
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -104,6 +124,7 @@ public class TimelineActivity extends AppCompatActivity {
             // Update the adapter
             adapter.notifyItemInserted(0);
             rvTweets.smoothScrollToPosition(0);
+            populateHomeTimeline();
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -115,6 +136,7 @@ public class TimelineActivity extends AppCompatActivity {
                 Log.i(TAG, "onSuccess" + json.toString());
                 JSONArray jsonArray = json.jsonArray;
                 try {
+                    showProgressBar();
                     clear();
                     addAll(Tweet.fromJsonArray(jsonArray));
                     // Now we call setRefreshing(false) to signal refresh has finished
@@ -123,11 +145,13 @@ public class TimelineActivity extends AppCompatActivity {
                     Log.e(TAG, "Json Exception", e);
                     e.printStackTrace();
                 }
+                hideProgressBar();
             }
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
                 Log.e(TAG, "onFailure" + response, throwable);
+                hideProgressBar();
             }
         });
     }
@@ -142,5 +166,15 @@ public class TimelineActivity extends AppCompatActivity {
     public void addAll(List<Tweet> list) {
         tweets.addAll(list);
         adapter.notifyDataSetChanged();
+    }
+
+    public void showProgressBar() {
+        // Show progress item
+        miActionProgressItem.setVisible(true);
+    }
+
+    public void hideProgressBar() {
+        // Hide progress item
+        miActionProgressItem.setVisible(false);
     }
 }

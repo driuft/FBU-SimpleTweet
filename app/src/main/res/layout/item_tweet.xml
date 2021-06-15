@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    >
+    android:layout_margin="8dp">
 
     <ImageView
         android:id="@+id/ivProfileImage"
@@ -39,6 +38,9 @@
         android:layout_toEndOf="@+id/ivProfileImage"
         android:textColor="#14171A"
         android:textSize="15sp"
+        android:autoLink="all"
+        android:linksClickable="true"
+        android:textColorLink="@color/twitter_blue"
         tools:text="This is my tweet!" />
 
     <TextView
@@ -81,5 +83,6 @@
         android:layout_toEndOf="@+id/ivProfileImage"
         android:scaleType="fitXY"
         android:visibility="gone"
-        tools:srcCompat="@tools:sample/avatars" />
+        tools:srcCompat="@tools:sample/avatars"
+        tools:visibility="gone" />
 </RelativeLayout>
